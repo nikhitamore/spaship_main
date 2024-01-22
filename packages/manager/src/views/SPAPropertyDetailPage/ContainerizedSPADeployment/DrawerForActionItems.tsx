@@ -1,15 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable react/no-array-index-key */
-import { usePopUp } from '@app/hooks';
 import { useListOfPods } from '@app/services/appLogs';
 import { useGetSPAPropGroupByName } from '@app/services/spaProperty';
 import { convertDateFormat } from '@app/utils/convertDateFormat';
+import { ApplicationStatus } from '@app/views/WebPropertyDetailPage/components/SSR/ApplicationStatus';
 import { ViewLogs } from '@app/views/WebPropertyDetailPage/components/SSR/ViewLogs';
-import {
-  TDataContainerized,
-  TDataWorkflow
-} from '@app/views/WebPropertyDetailPage/components/workflow3.0/types';
 import {
   ActionList,
   ActionListItem,
@@ -43,83 +38,55 @@ import {
   Title,
   Tooltip
 } from '@patternfly/react-core';
-import { BuildIcon, CubesIcon, GithubIcon, PlusCircleIcon } from '@patternfly/react-icons';
+import { BuildIcon, CubesIcon, GithubIcon } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
-import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
-import { ApplicationStatus } from '../../WebPropertyDetailPage/components/SSR/ApplicationStatus';
 import { Lighthouse } from '../Lighthouse/Lighthouse';
-import './ContainerizedSPADeployment.css';
-import { ModalForConfigureSpa } from './ModalForConfigureSpa';
-import { ModalForCreateSpa } from './ModalForCreateSpa';
-import { ModalForRedeploymentSpa } from './ModalForRedeploymentSpa';
 
 const INTERNAL_ACCESS_URL_LENGTH = 40;
 const SLICE_VAL_LENGTH = 20;
-
-export const ContainerizedSPADeployment = (): JSX.Element => {
-  const { query } = useRouter();
-  const propertyIdentifier = query.propertyIdentifier as string;
-  const [filterByEnv, setFilterByEnv] = useState('');
-  const [selectedDataListItemId, setSelectedDataListItemId] = useState<string>('dataListItem1');
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const spaProperties = useGetSPAPropGroupByName(propertyIdentifier, filterByEnv);
-  const spaProperty = query.spaProperty as string;
+type Props = {
+  propertyIdentifier: string;
+  spaProperty: string;
+  handlePopUpOpen: any;
+  setConfigureData: any;
+  setRedeployData: any;
+};
+export const DrawerForActionItems = ({
+  propertyIdentifier,
+  spaProperty,
+  handlePopUpOpen,
+  setConfigureData,
+  setRedeployData
+}: Props): JSX.Element => {
+  const spaProperties = useGetSPAPropGroupByName(propertyIdentifier, '');
   const containerizedDeploymentData = spaProperties?.data?.[spaProperty]?.filter(
     (item) => item.isContainerized === true
   );
-  const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [selectedDataListItemId, setSelectedDataListItemId] = useState<string>('dataListItem1');
   const [selected, setSelected] = useState<string>('More Actions');
   const paginatedData = containerizedDeploymentData;
   const [selectedData, setSelectedData] = useState<any>(containerizedDeploymentData?.[0]);
-  const { handlePopUpClose, handlePopUpOpen, popUp } = usePopUp([
-    'redeploySsrApplication',
-    'reconfigureSsrApplication',
-    'createSSRDeployment'
-  ] as const);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isOpen, setIsOpen] = useState(false);
+  // Logs sections
+  const [isLogsGit, setIsLogsGit] = useState(false);
+  const [buildIdList, setbuildIdList] = useState<string[]>([]);
+  const [buildDetails, setBuildDetails] = useState<string[]>([]);
+  const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
+  const [isLogsExpanded, setIsLogsExpanded] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>();
+  const [envName, setEnvName] = useState('');
+  const podIdList = useListOfPods(propertyIdentifier, spaProperty, envName);
+  const { pods: podList } = (podIdList?.data && podIdList?.data[0]) || {};
 
-  const [redeployData, setRedeployData] = useState<TDataContainerized>({
-    propertyIdentifier: '',
-    name: '',
-    path: '',
-    ref: '',
-    env: '',
-    identifier: '',
-    nextRef: '',
-    accessUrl: [],
-    updatedAt: '',
-    imageUrl: '',
-    healthCheckPath: '',
-    _id: 0,
-    isContainerized: false,
-    isGit: false,
-    config: {},
-    port: 3000
-  });
-  const [configureData, setConfigureData] = useState<TDataWorkflow | TDataContainerized>({
-    propertyIdentifier: '',
-    name: '',
-    path: '',
-    ref: '',
-    env: '',
-    identifier: '',
-    nextRef: '',
-    accessUrl: [],
-    updatedAt: '',
-    imageUrl: '',
-    healthCheckPath: '',
-    _id: 0,
-    isContainerized: false,
-    isGit: false,
-    config: {},
-    port: 3000
-  });
-
-  const [isChecked, setIsChecked] = useState<boolean>(true);
-
-  const handleChange = (checked: boolean) => {
-    setIsChecked(checked);
-  };
+  useEffect(() => {
+    if (!selectedData) {
+      setSelectedData(containerizedDeploymentData?.[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [containerizedDeploymentData]);
 
   const onSelectDataListItem = (id: string) => {
     const index = parseInt(id.charAt(id.length - 1), 10);
@@ -129,6 +96,14 @@ export const ContainerizedSPADeployment = (): JSX.Element => {
     setIsExpanded(true);
   };
 
+  const [rowOpenStates, setRowOpenStates] = useState<{ [key: string]: boolean }>({});
+
+  const onToggle = (rowId: string, isSelectOpen: boolean) => {
+    setRowOpenStates((prevStates) => ({
+      ...prevStates,
+      [rowId]: isSelectOpen
+    }));
+  };
   const onSelect = (
     event: React.MouseEvent | React.ChangeEvent,
     value: string | SelectOptionObject
@@ -145,40 +120,6 @@ export const ContainerizedSPADeployment = (): JSX.Element => {
 
     setIsOpen(false);
   };
-
-  const [rowOpenStates, setRowOpenStates] = useState<{ [key: string]: boolean }>({});
-
-  const onToggle = (rowId: string, isSelectOpen: boolean) => {
-    setRowOpenStates((prevStates) => ({
-      ...prevStates,
-      [rowId]: isSelectOpen
-    }));
-  };
-
-  const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
-  const [envName, setEnvName] = useState('');
-  const [isLogsGit, setIsLogsGit] = useState(false);
-  const [buildIdList, setbuildIdList] = useState<string[]>([]);
-  const [buildDetails, setBuildDetails] = useState<string[]>([]);
-  const [isLogsExpanded, setIsLogsExpanded] = useState(false);
-  const podIdList = useListOfPods(propertyIdentifier, spaProperty, envName);
-  const { pods: podList } = (podIdList?.data && podIdList?.data[0]) || {};
-  const drawerRef = useRef<HTMLDivElement>();
-
-  const onLogsExpand = () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    drawerRef.current && drawerRef.current.focus();
-  };
-
-  const onLogsCloseClick = () => {
-    setIsLogsExpanded(false);
-  };
-  const handleTabClick = async (
-    event: React.MouseEvent<any> | React.KeyboardEvent | MouseEvent,
-    tabIndex: string | number
-  ) => {
-    setActiveTabKey(tabIndex);
-  };
   const onClick = async (
     e: React.MouseEvent<any> | React.KeyboardEvent | React.ChangeEvent<Element>,
     name: string,
@@ -192,6 +133,7 @@ export const ContainerizedSPADeployment = (): JSX.Element => {
     setIsLogsExpanded(true);
     setIsLogsGit(rowData.isGit);
   };
+  // Application details panel
   const panelContent = (
     <DrawerPanelContent isResizable minSize="500px">
       <DrawerHead>
@@ -416,12 +358,20 @@ export const ContainerizedSPADeployment = (): JSX.Element => {
       })}
     </DataList>
   );
-  useEffect(() => {
-    if (!selectedData) {
-      setSelectedData(containerizedDeploymentData?.[0]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [containerizedDeploymentData]);
+
+  const handleTabClick = async (
+    event: React.MouseEvent<any> | React.KeyboardEvent | MouseEvent,
+    tabIndex: string | number
+  ) => {
+    setActiveTabKey(tabIndex);
+  };
+  const onLogsExpand = () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    drawerRef.current && drawerRef.current.focus();
+  };
+  const onLogsCloseClick = () => {
+    setIsLogsExpanded(false);
+  };
 
   const panelLogsContent = (
     <DrawerPanelContent
@@ -474,193 +424,25 @@ export const ContainerizedSPADeployment = (): JSX.Element => {
     </DrawerPanelContent>
   );
 
-  return (
-    <div>
-      <Split className="pf-u-mb-md">
-        <SplitItem>
-          <Button
-            className="pf-u-mb-md"
-            onClick={() => handlePopUpOpen('createSSRDeployment')}
-            icon={<PlusCircleIcon />}
-          >
-            Add New App
-          </Button>
-        </SplitItem>
-        <SplitItem
-          isFilled
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Label icon={<GithubIcon />}>Containerized deployment (Git)</Label>{' '}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', marginLeft: '16px' }}>
-            <Label icon={<BuildIcon />}>Containerized deployment</Label>{' '}
-          </div>
-        </SplitItem>
-      </Split>
-      {!containerizedDeploymentData?.length ? (
-        <EmptyState>
-          <EmptyStateIcon icon={CubesIcon} />
-          <Title headingLevel="h4" size="lg">
-            No containerized deployment exists.
-          </Title>
-          <EmptyStateBody>Please create an deployment to view them here</EmptyStateBody>
-        </EmptyState>
-      ) : (
-        <Drawer position="bottom" onExpand={onLogsExpand} isExpanded={isLogsExpanded}>
-          <DrawerContent panelContent={panelLogsContent}>
-            <DrawerContentBody style={{ overflowX: 'hidden', padding: '0px' }}>
-              <Drawer isStatic isExpanded={isExpanded}>
-                <DrawerContent panelContent={panelContent}>
-                  <DrawerContentBody>{drawerContent}</DrawerContentBody>
-                </DrawerContent>
-              </Drawer>
-            </DrawerContentBody>
-          </DrawerContent>
-        </Drawer>
-      )}
-      <ModalForConfigureSpa
-        propertyIdentifier={propertyIdentifier}
-        configureData={configureData}
-        handlePopUpClose={handlePopUpClose}
-        isOpen={popUp.reconfigureSsrApplication.isOpen}
-      />
-      <ModalForCreateSpa
-        propertyIdentifier={propertyIdentifier}
-        spaProperty={spaProperty}
-        handlePopUpClose={handlePopUpClose}
-        isOpen={popUp.createSSRDeployment.isOpen}
-      />
-      <ModalForRedeploymentSpa
-        propertyIdentifier={propertyIdentifier}
-        handlePopUpClose={handlePopUpClose}
-        isOpen={popUp.reconfigureSsrApplication.isOpen}
-        redeployData={redeployData}
-      />
-    </div>
+  return !containerizedDeploymentData?.length ? (
+    <EmptyState>
+      <EmptyStateIcon icon={CubesIcon} />
+      <Title headingLevel="h4" size="lg">
+        No containerized deployment exists.
+      </Title>
+      <EmptyStateBody>Please create an deployment to view them here</EmptyStateBody>
+    </EmptyState>
+  ) : (
+    <Drawer position="bottom" onExpand={onLogsExpand} isExpanded={isLogsExpanded}>
+      <DrawerContent panelContent={panelLogsContent}>
+        <DrawerContentBody style={{ overflowX: 'hidden', padding: '0px' }}>
+          <Drawer isStatic isExpanded={isExpanded}>
+            <DrawerContent panelContent={panelContent}>
+              <DrawerContentBody>{drawerContent}</DrawerContentBody>
+            </DrawerContent>
+          </Drawer>
+        </DrawerContentBody>
+      </DrawerContent>
+    </Drawer>
   );
 };
-
-// /* eslint-disable no-underscore-dangle */
-// /* eslint-disable react/no-array-index-key */
-// import { usePopUp } from '@app/hooks';
-// import {
-//   TDataContainerized,
-//   TDataWorkflow
-// } from '@app/views/WebPropertyDetailPage/components/workflow3.0/types';
-// import { Button, Label, Split, SplitItem } from '@patternfly/react-core';
-// import { BuildIcon, GithubIcon, PlusCircleIcon } from '@patternfly/react-icons';
-// import { useRouter } from 'next/router';
-// import { useState } from 'react';
-// import './ContainerizedSPADeployment.css';
-// import { DrawerForActionItems } from './DrawerForActionItems';
-// import { ModalForConfigureSpa } from './ModalForConfigureSpa';
-// import { ModalForCreateSpa } from './ModalForCreateSpa';
-// import { ModalForRedeploymentSpa } from './ModalForRedeploymentSpa';
-
-// export const ContainerizedSPADeployment = (): JSX.Element => {
-//   const { query } = useRouter();
-//   const propertyIdentifier = query.propertyIdentifier as string;
-//   const spaProperty = query.spaProperty as string;
-//   const { handlePopUpClose, handlePopUpOpen, popUp } = usePopUp([
-//     'redeploySsrApplication',
-//     'reconfigureSsrApplication',
-//     'createSSRDeployment'
-//   ] as const);
-
-//   const [redeployData, setRedeployData] = useState<TDataContainerized>({
-//     propertyIdentifier: '',
-//     name: '',
-//     path: '',
-//     ref: '',
-//     env: '',
-//     identifier: '',
-//     nextRef: '',
-//     accessUrl: [],
-//     updatedAt: '',
-//     imageUrl: '',
-//     healthCheckPath: '',
-//     _id: 0,
-//     isContainerized: false,
-//     isGit: false,
-//     config: {},
-//     port: 3000
-//   });
-//   const [configureData, setConfigureData] = useState<TDataWorkflow | TDataContainerized>({
-//     propertyIdentifier: '',
-//     name: '',
-//     path: '',
-//     ref: '',
-//     env: '',
-//     identifier: '',
-//     nextRef: '',
-//     accessUrl: [],
-//     updatedAt: '',
-//     imageUrl: '',
-//     healthCheckPath: '',
-//     _id: 0,
-//     isContainerized: false,
-//     isGit: false,
-//     config: {},
-//     port: 3000
-//   });
-
-//   return (
-//     <div>
-//       <Split className="pf-u-mb-md">
-//         <SplitItem>
-//           <Button
-//             className="pf-u-mb-md"
-//             onClick={() => handlePopUpOpen('createSSRDeployment')}
-//             icon={<PlusCircleIcon />}
-//           >
-//             Add New App
-//           </Button>
-//         </SplitItem>
-//         <SplitItem
-//           isFilled
-//           style={{
-//             display: 'flex',
-//             justifyContent: 'flex-end'
-//           }}
-//         >
-//           <div style={{ display: 'flex', alignItems: 'center' }}>
-//             <Label icon={<GithubIcon />}>Containerized deployment (Git)</Label>{' '}
-//           </div>
-//           <div style={{ display: 'flex', alignItems: 'center', marginLeft: '16px' }}>
-//             <Label icon={<BuildIcon />}>Containerized deployment</Label>{' '}
-//           </div>
-//         </SplitItem>
-//       </Split>
-
-//       <DrawerForActionItems
-//         propertyIdentifier={propertyIdentifier}
-//         spaProperty={spaProperty}
-//         handlePopUpOpen={handlePopUpOpen}
-//         setRedeployData={setRedeployData}
-//         setConfigureData={setConfigureData}
-//       />
-//       <ModalForConfigureSpa
-//         propertyIdentifier={propertyIdentifier}
-//         configureData={configureData}
-//         handlePopUpClose={handlePopUpClose}
-//         isOpen={popUp.reconfigureSsrApplication.isOpen}
-//       />
-//       <ModalForCreateSpa
-//         propertyIdentifier={propertyIdentifier}
-//         spaProperty={spaProperty}
-//         handlePopUpClose={handlePopUpClose}
-//         isOpen={popUp.createSSRDeployment.isOpen}
-//       />
-//       <ModalForRedeploymentSpa
-//         propertyIdentifier={propertyIdentifier}
-//         handlePopUpClose={handlePopUpClose}
-//         isOpen={popUp.redeploySsrApplication.isOpen}
-//         redeployData={redeployData}
-//       />
-//     </div>
-//   );
-// };
