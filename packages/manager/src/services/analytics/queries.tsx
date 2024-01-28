@@ -183,13 +183,13 @@ function transformInput(input: TransformedInput): TransformedOutput {
   const output: TransformedOutput = {};
 
   environments.forEach((env) => {
-    output[env] =
-      input[env] ||
-      input.dev.map((devItem) => ({
-        ...devItem,
-        env,
-        count: 0
-      }));
+    try {
+      output[env] =
+        input[env] ||
+        (input.dev ? input.dev.map((devItem) => ({ ...devItem, env, count: 0 })) : []);
+    } catch (error) {
+      console.error(`Error transforming input for environment ${env}:`, error);
+    }
   });
 
   return output;
