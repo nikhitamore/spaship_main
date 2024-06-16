@@ -339,9 +339,7 @@ export const SideBar = () => {
             height={600}
           >
             <p>
-              <InfoCircleIcon /> &nbsp; Disclaimer: Please note that this is a pilot version in the
-              early stages of development and is considered pre-alpha. We are providing this for the
-              purpose of gathering{' '}
+              <InfoCircleIcon /> &nbsp;Disclaimer: Please note that this is a pilot version in the early stages of development and is considered alpha. We are providing this for the purpose of gathering{' '}
               <span
                 onClick={() => {
                   const feedbackElement: any = document.querySelector('opc-feedback');
