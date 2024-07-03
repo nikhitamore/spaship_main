@@ -54,6 +54,7 @@ import { useSession } from 'next-auth/react';
 import { ApplicationStatus } from '../../WebPropertyDetailPage/components/SSR/ApplicationStatus';
 import { Lighthouse } from '../Lighthouse/Lighthouse';
 import { VirtualPath } from '../VirtualPath/VirtualPath';
+import ConfirmationModal from './ConfirmationModal';
 
 const INTERNAL_URL_LENGTH = 40;
 const SLICE_VAL_LENGTH = 20;
@@ -547,61 +548,28 @@ export const StaticSPADeployment = (): JSX.Element => {
         </Drawer>
       )}
 
-      <Modal
+      <ConfirmationModal
         title="AutoSync Confirmation"
-        variant={ModalVariant.small}
         isOpen={popUp.autoSync.isOpen}
+        isChecked={isChecked}
+        checkboxLabel={isChecked ? 'AutoSync Enabled' : 'AutoSync Disabled'}
         onClose={() => handlePopUpClose('autoSync')}
-      >
-        <Checkbox
-          label={isChecked ? 'AutoSync Enabled' : 'AutoSync Disabled'}
-          isChecked={isChecked}
-          onChange={(checked: boolean) => {
-            setIsChecked(checked);
-          }}
-          id="controlled-check-1"
-          name="AutoSync"
-        />
-
-        <ActionGroup>
-          <Button onClick={() => handleAutoSync()} className="pf-u-mr-md pf-u-mt-md">
-            {' '}
-            Submit
-          </Button>
-          <Button onClick={() => handlePopUpClose('autoSync')} className="pf-u-mt-md">
-            Cancel
-          </Button>
-        </ActionGroup>
-      </Modal>
-      <Modal
+        onCheckboxChange={(checked: boolean) => setIsChecked(checked)} // Adjusted to match the prop type
+        onSubmit={handleAutoSync}
+      />
+      <ConfirmationModal
         title="AutoEnable symlink Confirmation"
-        variant={ModalVariant.small}
         isOpen={popUp.autoEnableSymlink.isOpen}
+        isChecked={isSymlinkAutoEnabled[selectedDataListItemId]}
+        checkboxLabel={
+          isSymlinkAutoEnabled[selectedDataListItemId]
+            ? 'AutoEnable symlink Enabled'
+            : 'AutoEnable symlink Disabled'
+        }
         onClose={() => handlePopUpClose('autoEnableSymlink')}
-      >
-        <Checkbox
-          label={
-            isSymlinkAutoEnabled[selectedDataListItemId]
-              ? 'AutoEnable symlink Enabled'
-              : 'AutoEnable symlink Disabled'
-          }
-          isChecked={isSymlinkAutoEnabled[selectedDataListItemId]}
-          onChange={() => toggleSymlinkAutoEnabled(selectedDataListItemId)}
-          id="controlled-check-1"
-          name="autoEnableSymlink"
-        />
-        <ActionGroup>
-          <Button
-            onClick={() => handleAutoEnableSymlink(isSymlinkAutoEnabled[selectedDataListItemId])}
-            className="pf-u-mr-md pf-u-mt-md"
-          >
-            Submit
-          </Button>
-          <Button onClick={() => handlePopUpClose('autoEnableSymlink')} className="pf-u-mt-md">
-            Cancel
-          </Button>
-        </ActionGroup>
-      </Modal>
+        onCheckboxChange={() => toggleSymlinkAutoEnabled(selectedDataListItemId)}
+        onSubmit={() => handleAutoEnableSymlink(isSymlinkAutoEnabled[selectedDataListItemId])}
+      />
     </div>
   );
 };
