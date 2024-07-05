@@ -1,3 +1,5 @@
+/* eslint-disable react/no-array-index-key */
+
 import { usePopUp } from '@app/hooks';
 import {
   ActionList,
