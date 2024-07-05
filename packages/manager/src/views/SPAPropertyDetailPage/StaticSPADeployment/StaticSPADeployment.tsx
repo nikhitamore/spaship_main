@@ -78,8 +78,6 @@ export const StaticSPADeployment = (): JSX.Element => {
                   <DrawerContentBody>
                     <StaticSpaDrawerContent
                       propertyIdentifier={propertyIdentifier}
-                      envName={envName}
-                      spaProperty={spaProperty}
                       staticDeploymentData={staticDeploymentData}
                       selectedData={selectedData}
                       setIsLogsExpanded={setIsLogsExpanded}
