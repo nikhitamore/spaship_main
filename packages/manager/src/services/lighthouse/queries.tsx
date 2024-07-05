@@ -42,18 +42,20 @@ export const useLighthouseReportForGivenBuildId = (
   isContainerized?: boolean
 ) =>
   useQuery(
-    [lighthouseKeys.list(webPropertyIdentifier, env), selected], // Combine keys for uniqueness
+    [lighthouseKeys.list(webPropertyIdentifier, identifier, env), selected], // Include identifier and env in the key array
     () =>
-      fetchLighthouseReportForGivenBuildId(
-        webPropertyIdentifier,
-        identifier,
-        env,
-        selected,
-        isGit,
-        isContainerized
-      ),
+      selected !== 'Select build-id'
+        ? fetchLighthouseReportForGivenBuildId(
+            webPropertyIdentifier,
+            identifier,
+            env,
+            selected,
+            isGit,
+            isContainerized
+          )
+        : Promise.resolve(null), // Return null or some placeholder when not fetching
     {
-      enabled: selected !== 'Select build-id', // Disable query for "Select build-id"
+      enabled: selected !== 'Select build-id', // Enable only when selected is not 'Select build-id'
       staleTime: Infinity // Prevent automatic refetching
     }
   );
