@@ -73,6 +73,7 @@
     "react-intersection-observer": "^9.4.1",
     "simplebar": "^5.3.9",
     "simplebar-react": "^2.4.3",
+    "uuid": "^10.0.0",
     "victory": "^36.7.0",
     "victory-zoom-container": "^36.6.8",
     "yup": "0.32.11"
@@ -83,6 +84,7 @@
     "@types/react": "18.0.27",
     "@types/react-dom": "18.0.10",
     "@types/react-highcharts": "^16.0.3",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "5.51.0",
     "eslint": "8.23.0",
     "eslint-config-airbnb": "19.0.4",

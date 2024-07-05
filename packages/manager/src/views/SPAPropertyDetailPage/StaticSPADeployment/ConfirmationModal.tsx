@@ -19,25 +19,23 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onClose,
   onCheckboxChange,
   onSubmit
-}) => {
-  return (
-    <Modal title={title} variant={ModalVariant.small} isOpen={isOpen} onClose={onClose}>
-      <Checkbox
-        label={checkboxLabel}
-        isChecked={isChecked}
-        onChange={onCheckboxChange} // Pass the function directly
-        id="controlled-check-1"
-      />
-      <ActionGroup>
-        <Button onClick={onSubmit} className="pf-u-mr-md pf-u-mt-md">
-          Submit
-        </Button>
-        <Button onClick={onClose} className="pf-u-mt-md">
-          Cancel
-        </Button>
-      </ActionGroup>
-    </Modal>
-  );
-};
+}) => (
+  <Modal title={title} variant={ModalVariant.small} isOpen={isOpen} onClose={onClose}>
+    <Checkbox
+      label={checkboxLabel}
+      isChecked={isChecked}
+      onChange={onCheckboxChange} // Pass the function directly
+      id="controlled-check-1"
+    />
+    <ActionGroup>
+      <Button onClick={onSubmit} className="pf-u-mr-md pf-u-mt-md">
+        Submit
+      </Button>
+      <Button onClick={onClose} className="pf-u-mt-md">
+        Cancel
+      </Button>
+    </ActionGroup>
+  </Modal>
+);
 
 export default ConfirmationModal;

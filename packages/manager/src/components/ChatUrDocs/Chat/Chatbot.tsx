@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable react/no-array-index-key */
 /* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable  no-console */
 
 import { env } from '@app/config/env';
 import { Card, CardBody } from '@patternfly/react-core';
@@ -118,7 +119,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ botName }) => {
       if (chatMessages.length > 2) {
         logFeedback(fullMessage, 0, userQuestion);
       }
-      // eslint-disable-next-line no-console
       console.error('Streaming completed', error);
       eventSource.close();
     };
